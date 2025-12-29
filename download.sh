@@ -15,6 +15,6 @@ do
     sleep 2
   done
 done
-ls *csv | sed 's/.*T_\(.*\)/mv & \1/' |sh
+ls *csv | sed 's/.*T_\(.*\)/mv & data\/\1/' |sh
 # T: DateTime Stamp,Bid Quote,Ask Quote
 # M1: DateTime Stamp;Bar OPEN Bid Quote;Bar HIGH Bid Quote;Bar LOW Bid Quote;Bar CLOSE Bid Quote
