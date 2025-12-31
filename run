@@ -1,6 +1,6 @@
-python test.py &
-python test.py &
-python test.py &
-python test.py &
-python test.py &
+./test.py &
+./test.py &
+./test.py &
+./test.py &
+./test.py &
 wait

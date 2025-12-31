@@ -1,3 +1,4 @@
+#!/Users/jerry/trade/myvenv/bin/python
 import csv
 import sys
 import glob
@@ -5,19 +6,19 @@ import time
 import random
 import os.path
 from datetime import datetime, timedelta
-#from colorama import init as colorama_init
-#from colorama import Fore
-#from colorama import Style
+from colorama import init as colorama_init
+from colorama import Fore
+from colorama import Style
 
-#colorama_init()
+colorama_init()
 
 
 # ===================== CONFIG =====================
 
 PIP = 0.0001
 TAKE_PROFIT = 20
-STOP_LOSS = 200
-TRADE_INTERVAL = 86400 * 2
+STOP_LOSS = 20
+TRADE_INTERVAL = 86400 * 3
 
 EMA_FAST = 50
 EMA_SLOW = 200
@@ -98,10 +99,11 @@ def test():
   total_pips = 0.0
   in_trade = False
   wait_seconds = random.randint(0, TRADE_INTERVAL)
-  next_trade_time = next(ticks())[0] + timedelta(seconds=wait_seconds)
+  iter_ticks = ticks()
+  next_trade_time = next(iter_ticks)[0] + timedelta(seconds=wait_seconds)
   trend_detector = TrendDetector()
 
-  for dt, bid, ask in ticks():
+  for dt, bid, ask in iter_ticks:
     mid = (bid + ask) / 2
     trend = trend_detector.update(mid)
 
@@ -156,10 +158,10 @@ def test():
   return orders, total_pips
 
 def print_order(entry, idx=0):
-  #color = Fore.GREEN if entry['direction'] == 'BUY' else Fore.Yellow
+  color = Fore.GREEN if entry['direction'] == 'BUY' else Fore.YELLOW
   print(
-    #f"{idx:03d} | {Fore.GREEN}{entry['direction']:4s}{Style.RESET_ALL} | "
-    f"{idx:03d} | {entry['direction']:4s} | "
+    f"{idx:03d} | {color}{entry['direction']:4s}{Style.RESET_ALL} | "
+    #f"{idx:03d} | {entry['direction']:4s} | "
     f"Open: {entry['open_time']} @ {entry['open_price']:.5f} | "
     f"Close: {entry['close_time']} @ {entry['close_price']:.5f} | "
     f"Pips: {entry['pips']:.1f}"

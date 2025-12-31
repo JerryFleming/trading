@@ -4,11 +4,11 @@ do
   do
     [ -e DAT_ASCII_EURUSD_T_$y$m.csv ] && continue
     timeframe=T
-    [ $timeframe == T ] && quote=tick-data-quotes
-    [ $timeframe == M1 ] && quote=1-minute-bar-quotes
+    [ $timeframe == T ] && quotes=tick-data-quotes
+    [ $timeframe == M1 ] && quotes=1-minute-bar-quotes
     url="https://www.histdata.com/download-free-forex-historical-data/?/ascii/$quotes/eurusd/$y/$m"
     tk=$(curl $url | grep -m1 tk | sed 's/.*value="//;s/....$//')
-    curl -X POST -d "tk=$tk&date=$y&datemonth=$y$m&platform=ASCII&timeframe=$timeframe&fxpair=EURUSD" \
+    curl -sX POST -d "tk=$tk&date=$y&datemonth=$y$m&platform=ASCII&timeframe=$timeframe&fxpair=EURUSD" \
       -H "Referer: $url" \
       -o me.zip https://www.histdata.com/get.php
     unzip -o me.zip
