@@ -5,7 +5,8 @@ import glob
 import time
 import random
 import os.path
-from datetime import datetime, timedelta
+import pandas as pd
+import numpy as np
 from colorama import init as colorama_init
 from colorama import Fore
 from colorama import Style
@@ -17,7 +18,7 @@ colorama_init()
 
 PIP = 0.0001
 TAKE_PROFIT = 20
-STOP_LOSS = 20
+STOP_LOSS = 2000
 TRADE_INTERVAL = 86400 * 3
 
 EMA_FAST = 50
@@ -31,16 +32,21 @@ def ticks():
     if os.path.basename(fname) < '2015':
       continue
     print(f"Reading file {fname}")
-    with open(fname, "r") as f:
-      reader = csv.reader(f)
-      for row in reader:
-        dt = datetime.strptime(
-          f"{row[0]} {row[1][:-3]}", "%Y%m%d %H%M%S"
-        )
-        bid = float(row[2])
-        ask = float(row[3])
-        yield dt, bid, ask
-    time.sleep(10)
+    df = pd.read_csv(
+      fname,
+      header=None,
+      usecols=[0, 1, 2, 3],
+      names=["date", "time", "bid", "ask"],
+      dtype={"date": "str", "time": "str", "bid": "float32", "ask": "float32"},
+    )
+    # vectorised datetime parsing
+    dt = pd.to_datetime(
+      df["date"] + " " + df["time"],
+      format="%Y%m%d %H%M%S%f",
+    )
+    # convert once
+    for dt, bid, ask in zip(dt.values, df["bid"].values, df["ask"].values):
+      yield dt, bid, ask
 
 # ===================== BACKTEST =====================
 
@@ -100,7 +106,7 @@ def test():
   in_trade = False
   wait_seconds = random.randint(0, TRADE_INTERVAL)
   iter_ticks = ticks()
-  next_trade_time = next(iter_ticks)[0] + timedelta(seconds=wait_seconds)
+  next_trade_time = next(iter_ticks)[0] + np.timedelta64(wait_seconds, "s")
   trend_detector = TrendDetector()
 
   for dt, bid, ask in iter_ticks:
@@ -153,7 +159,7 @@ def test():
       in_trade = False
 
       wait_seconds = random.randint(0, TRADE_INTERVAL)
-      next_trade_time = close_time + timedelta(seconds=wait_seconds)
+      next_trade_time = close_time + np.timedelta64(wait_seconds, "s")
 
   return orders, total_pips
 
@@ -162,8 +168,8 @@ def print_order(entry, idx=0):
   print(
     f"{idx:03d} | {color}{entry['direction']:4s}{Style.RESET_ALL} | "
     #f"{idx:03d} | {entry['direction']:4s} | "
-    f"Open: {entry['open_time']} @ {entry['open_price']:.5f} | "
-    f"Close: {entry['close_time']} @ {entry['close_price']:.5f} | "
+    f"Open: {entry['open_time'].astype(str)[:-6]} @ {entry['open_price']:.5f} | "
+    f"Close: {entry['close_time'].astype(str)[:-6]} @ {entry['close_price']:.5f} | "
     f"Pips: {entry['pips']:.1f}"
   )
 
